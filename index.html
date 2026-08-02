@@ -140,13 +140,20 @@
   const originals = new WeakMap();
   let language = 'zh';
 
+  function eachTextNode(root, callback) {
+    let node = root.firstChild;
+    while (node) {
+      const next = node.nextSibling;
+      if (node.nodeType === 3) callback(node);
+      else if (node.nodeType === 1 && node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') eachTextNode(node, callback);
+      node = next;
+    }
+  }
+
   function collectOriginals() {
-    document.querySelectorAll('body *').forEach((element) => {
-      if (element.matches('script,style')) return;
-      [...element.childNodes].forEach((node) => {
-        if (node.nodeType !== 3 || !node.nodeValue.trim()) return;
-        if (!originals.has(node)) originals.set(node, node.nodeValue);
-      });
+    eachTextNode(document.body, (node) => {
+      if (!node.nodeValue.trim()) return;
+      if (!originals.has(node)) originals.set(node, node.nodeValue);
     });
   }
 
@@ -155,14 +162,11 @@
     collectOriginals();
     document.documentElement.dataset.lang = next;
     document.documentElement.lang = next === 'en' ? 'en' : 'zh-CN';
-    document.querySelectorAll('body *').forEach((element) => {
-      if (element.matches('script,style')) return;
-      [...element.childNodes].forEach((node) => {
-        const original = originals.get(node);
-        if (!original) return;
-        const trimmed = original.trim();
-        node.nodeValue = next === 'en' && en[trimmed] ? original.replace(trimmed, en[trimmed]) : original;
-      });
+    eachTextNode(document.body, (node) => {
+      const original = originals.get(node);
+      if (!original) return;
+      const trimmed = original.trim();
+      node.nodeValue = next === 'en' && en[trimmed] ? original.replace(trimmed, en[trimmed]) : original;
     });
     document.querySelectorAll('.language-switch button').forEach((button, index) => {
       const active = next === 'en' ? index === 1 : index === 0;
