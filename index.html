@@ -139,7 +139,7 @@
   const storyData = [{"quote":"“第一次带孩子参加海钓，船长没有急着追求钓获，\n而是先教我们熟悉装备和海况。船上比预想中舒服，\n孩子钓到第一条鱼的那一刻，已经值回了整次旅程。”","guest":"林先生","trip":"家庭日落包船 · 2026.06","image":"/luxury-sportfisher-lifestyle.webp","alt":"一家人在高阶海钓游艇上由船员陪同完成第一次海钓","date":"2026.06.18","catchValue":"8.6","catchUnit":"KG","rating":"5.0"},{"quote":"“我们原本只是想体验一次真正的外海作钓，船长却把潮汐、找鱼和控线讲得非常清楚。返航时每个人都知道这不是一次碰运气的旅行。”","guest":"周先生","trip":"远礁目标鱼包船 · 2026.05","image":"/luxury-sportfisher-action.webp","alt":"钓手在大型飞桥运动海钓游艇上由专业船长带领作钓","date":"2026.05.27","catchValue":"12.4","catchUnit":"KG","rating":"4.9"},{"quote":"“几位朋友临时决定拼船，原本担心彼此不熟会尴尬。船员很自然地安排了位置和节奏，既能互相交流，也保留了各自安静钓鱼的空间。”","guest":"陈女士","trip":"周末近海拼船 · 2026.07","image":"/luxury-sportfisher-exterior.webp","alt":"朋友乘坐高阶运动海钓游艇参加周末拼船","date":"2026.07.09","catchValue":"6.8","catchUnit":"KG","rating":"5.0"}];
   const originals = new WeakMap();
   const attrOriginals = new WeakMap();
-  let language = localStorage.getItem('deep-current-language') === 'en' ? 'en' : 'zh';
+  let language = 'zh';
 
   function collectOriginals() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -163,7 +163,6 @@
     collectOriginals();
     document.documentElement.dataset.lang = next;
     document.documentElement.lang = next === 'en' ? 'en' : 'zh-CN';
-    localStorage.setItem('deep-current-language', next);
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) {
       const node = walker.currentNode;
@@ -172,7 +171,6 @@
       const trimmed = original.trim();
       node.nodeValue = next === 'en' && en[trimmed] ? original.replace(trimmed, en[trimmed]) : original;
     }
-    attrOriginals.forEach?.(() => {});
     document.querySelectorAll('[aria-label],[alt]').forEach((element) => {
       const attrs = attrOriginals.get(element);
       if (!attrs) return;
