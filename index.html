@@ -138,23 +138,15 @@
   const planData = {"charter":[{"eyebrow":"PRIVATE CHARTER · 01","title":"远礁目标鱼包船","meta":"8 小时 · 最多 6 人 · Dubai Harbour Marina 出发","fish":"黄鳍金枪鱼 / 海鲈 / 真鲷","price":"¥6,880","note":"整船起","status":"08.03 可订","image":"/luxury-sportfisher-exterior.webp","position":"68% center","alt":"高阶运动海钓游艇搭载钓手驶向外海"},{"eyebrow":"PRIVATE CHARTER · 02","title":"日落家庭海钓","meta":"5 小时 · 最多 8 人 · Dubai Harbour Marina 出发","fish":"黑鲷 / 鲅鱼 / 近海体验","price":"¥3,880","note":"整船起","status":"本周可订","image":"/luxury-sportfisher-lifestyle.webp","position":"56% center","alt":"客人在高阶海钓游艇上体验日落包船"}],"shared":[{"eyebrow":"SHARED TRIP · 01","title":"周末近海拼船","meta":"6 小时 · 8 人船 · 07:00 出发","fish":"海鲈 / 黑鲷 / 鲅鱼","price":"¥980","note":"/ 人","status":"仅剩 3 席","image":"/luxury-sportfisher-action.webp","position":"58% center","alt":"多位钓手在大型海钓游艇上共同作钓"},{"eyebrow":"SHARED TRIP · 02","title":"新手轻量体验","meta":"4 小时 · 6 人船 · 14:00 出发","fish":"近海鱼种 / 基础船钓","price":"¥680","note":"/ 人","status":"即将成团","image":"/luxury-sportfisher-lifestyle.webp","position":"48% center","alt":"新手在船员协助下体验高阶游艇海钓"}]};
   const storyData = [{"quote":"“第一次带孩子参加海钓，船长没有急着追求钓获，\n而是先教我们熟悉装备和海况。船上比预想中舒服，\n孩子钓到第一条鱼的那一刻，已经值回了整次旅程。”","guest":"林先生","trip":"家庭日落包船 · 2026.06","image":"/luxury-sportfisher-lifestyle.webp","alt":"一家人在高阶海钓游艇上由船员陪同完成第一次海钓","date":"2026.06.18","catchValue":"8.6","catchUnit":"KG","rating":"5.0"},{"quote":"“我们原本只是想体验一次真正的外海作钓，船长却把潮汐、找鱼和控线讲得非常清楚。返航时每个人都知道这不是一次碰运气的旅行。”","guest":"周先生","trip":"远礁目标鱼包船 · 2026.05","image":"/luxury-sportfisher-action.webp","alt":"钓手在大型飞桥运动海钓游艇上由专业船长带领作钓","date":"2026.05.27","catchValue":"12.4","catchUnit":"KG","rating":"4.9"},{"quote":"“几位朋友临时决定拼船，原本担心彼此不熟会尴尬。船员很自然地安排了位置和节奏，既能互相交流，也保留了各自安静钓鱼的空间。”","guest":"陈女士","trip":"周末近海拼船 · 2026.07","image":"/luxury-sportfisher-exterior.webp","alt":"朋友乘坐高阶运动海钓游艇参加周末拼船","date":"2026.07.09","catchValue":"6.8","catchUnit":"KG","rating":"5.0"}];
   const originals = new WeakMap();
-  const attrOriginals = new WeakMap();
   let language = 'zh';
 
   function collectOriginals() {
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      if (node.parentElement?.closest('script,style') || !node.nodeValue.trim()) continue;
-      if (!originals.has(node)) originals.set(node, node.nodeValue);
-    }
-    document.querySelectorAll('[aria-label],[alt]').forEach((element) => {
-      if (!attrOriginals.has(element)) {
-        attrOriginals.set(element, {
-          'aria-label': element.getAttribute('aria-label'),
-          alt: element.getAttribute('alt'),
-        });
-      }
+    document.querySelectorAll('body *').forEach((element) => {
+      if (element.matches('script,style')) return;
+      [...element.childNodes].forEach((node) => {
+        if (node.nodeType !== 3 || !node.nodeValue.trim()) return;
+        if (!originals.has(node)) originals.set(node, node.nodeValue);
+      });
     });
   }
 
@@ -163,21 +155,14 @@
     collectOriginals();
     document.documentElement.dataset.lang = next;
     document.documentElement.lang = next === 'en' ? 'en' : 'zh-CN';
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    while (walker.nextNode()) {
-      const node = walker.currentNode;
-      const original = originals.get(node);
-      if (!original) continue;
-      const trimmed = original.trim();
-      node.nodeValue = next === 'en' && en[trimmed] ? original.replace(trimmed, en[trimmed]) : original;
-    }
-    document.querySelectorAll('[aria-label],[alt]').forEach((element) => {
-      const attrs = attrOriginals.get(element);
-      if (!attrs) return;
-      for (const name of ['aria-label','alt']) {
-        const original = attrs[name];
-        if (original !== null) element.setAttribute(name, next === 'en' && en[original] ? en[original] : original);
-      }
+    document.querySelectorAll('body *').forEach((element) => {
+      if (element.matches('script,style')) return;
+      [...element.childNodes].forEach((node) => {
+        const original = originals.get(node);
+        if (!original) return;
+        const trimmed = original.trim();
+        node.nodeValue = next === 'en' && en[trimmed] ? original.replace(trimmed, en[trimmed]) : original;
+      });
     });
     document.querySelectorAll('.language-switch button').forEach((button, index) => {
       const active = next === 'en' ? index === 1 : index === 0;
