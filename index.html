@@ -226,7 +226,11 @@
   }
 
   document.documentElement.classList.add('static-export');
-  document.querySelectorAll('.language-switch button').forEach((button, index) => button.addEventListener('click', () => setLanguage(index ? 'en' : 'zh')));
+  function safeSetLanguage(next) {
+    try { setLanguage(next); }
+    catch (error) { document.documentElement.dataset.langError = String(error?.stack || error); }
+  }
+  document.querySelectorAll('.language-switch button').forEach((button, index) => button.addEventListener('click', () => safeSetLanguage(index ? 'en' : 'zh')));
   document.querySelectorAll('.plan-toolbar button').forEach((button, index) => button.addEventListener('click', () => renderPlans(index ? 'shared' : 'charter')));
   document.querySelectorAll('.story-switcher button').forEach((button, index) => button.addEventListener('click', () => renderStory(index)));
   document.querySelectorAll('.faq-list article button').forEach((button) => button.addEventListener('click', () => {
@@ -245,6 +249,6 @@
   });
   nav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => nav.classList.remove('nav-open')));
   addEventListener('scroll', () => document.querySelector('.site-header')?.classList.toggle('is-scrolled', scrollY > 36), {passive:true});
-  setLanguage(language);
+  safeSetLanguage(language);
 })();
 </script></body></html>
